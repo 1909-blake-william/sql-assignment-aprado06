@@ -115,11 +115,11 @@ IS
 BEGIN
     OPEN results FOR SELECT firstname, lastname FROM employee;
 END names;
-/
+
 SET SERVEROUTPUT ON;
 DECLARE 
-    first_name VARCHAR(30);
-    last_name VARCHAR(30);
+    first_name VARCHAR(20);
+    last_name VARCHAR(20);
     results sys_refcursor;
 BEGIN
     names(results);
@@ -133,12 +133,50 @@ END;
 4.2 Stored Procedure Input Parameters
 Task – Create a stored procedure that updates the personal information of an employee.
 
+CREATE OR REPLACE PROCEDURE updateEmployee
+(first_name IN VARCHAR2, last_name IN VARCHAR2, e_title IN VARCHAR2, previous_firstn IN VARCHAR2, previous_lastn IN VARCHAR2)
+IS BEGIN
+    UPDATE employee
+    SET lastname = last_name, firstname = first_name, title = e_title
+    WHERE firstname = previous_firstn AND lastname = previous_lastn;
+END updateEmployee;
 
 Task – Create a stored procedure that returns the managers of an employee.
 
+CREATE OR REPLACE PROCEDURE findManagers
+(inputemployeeid IN NUMBER, results OUT sys_refcursor)
+IS 
+BEGIN
+    OPEN results FOR SELECT employeeid, firstname, lastname FROM employee 
+    WHERE employeeid = (SELECT reportsto FROM employee WHERE employeeid = inputemployeeid);  
+END findManagers;
+
+SET SERVEROUTPUT ON;
+DECLARE 
+    first_name VARCHAR(20);
+    last_name VARCHAR(20);
+    e_id number;
+    results sys_refcursor;
+    
+BEGIN
+    findManagers(5,results);
+    LOOP
+        FETCH results INTO e_id, first_name, last_name;
+        EXIT WHEN results%notfound;
+        DBMS_OUTPUT.PUT_LINE(e_id || ',' || last_name || ',' || first_name);
+    END LOOP;
+END; 
 
 4.3 Stored Procedure Output Parameters
 Task – Create a stored procedure that returns the name and company of a customer.
+
+CREATE OR REPLACE PROCEDURE getInfo
+(inputCustomerid IN NUMBER, results OUT sys_refcursor)
+IS
+BEGIN
+    OPEN results FOR SELECT firstname, lastname, company FROM customer
+    WHERE customerid = inputCustomerid;
+END getInfo;
 
 6.0 Triggers
 In this section you will create various kinds of triggers that work when certain DML statements are executed on a table.
